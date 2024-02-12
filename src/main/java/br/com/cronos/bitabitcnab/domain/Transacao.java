@@ -1,21 +1,24 @@
 package br.com.cronos.bitabitcnab.domain;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+
 import java.math.BigDecimal;
-import java.sql.Time;
 import java.sql.Date;
+import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 public record Transacao(
-        Long id,
+        @Id Long id,
         Integer tipo,
         Date data,
         BigDecimal valor,
         Long cpf,
         String cartao,
         Time hora,
-        String donoDaLoja,
-        String nomeDaLoja
+        @Column("DONO_LOJA") String donoDaLoja,
+        @Column("NOME_LOJA") String nomeDaLoja
 ) {
     public Transacao withValor(BigDecimal valor) {
         return new Transacao(
