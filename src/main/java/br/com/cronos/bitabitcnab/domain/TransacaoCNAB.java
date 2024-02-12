@@ -1,4 +1,4 @@
-package br.com.cronos.bitabitcnab;
+package br.com.cronos.bitabitcnab.domain;
 
 import java.math.BigDecimal;
 

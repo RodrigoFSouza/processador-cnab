@@ -1,9 +1,14 @@
-package br.com.cronos.bitabitcnab;
+package br.com.cronos.bitabitcnab.job;
 
+import br.com.cronos.bitabitcnab.domain.Transacao;
+import br.com.cronos.bitabitcnab.domain.TransacaoCNAB;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
@@ -14,9 +19,11 @@ import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilde
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.batch.item.file.transform.Range;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
@@ -53,10 +60,11 @@ public class BatchConfig {
     }
 
     @Bean
-    FlatFileItemReader<TransacaoCNAB> reader() {
+    @StepScope
+    FlatFileItemReader<TransacaoCNAB> reader(@Value("#{jobParameters['cnabFile']}") Resource resource) {
         return new FlatFileItemReaderBuilder<TransacaoCNAB>()
                 .name("reader")
-                .resource(new FileSystemResource("files/CNAB.txt"))
+                .resource(resource)
                 .fixedLength()
                 .columns(
                         new Range(1, 1), new Range(2, 9),
@@ -99,5 +107,13 @@ public class BatchConfig {
                 .build();
     }
 
+    @Bean
+    JobLauncher jobLauncherAsync(JobRepository jobRepository) throws Exception {
+        var jobLauncher = new TaskExecutorJobLauncher();
+        jobLauncher.setJobRepository(jobRepository);
+        jobLauncher.setTaskExecutor(new SimpleAsyncTaskExecutor());
+        jobLauncher.afterPropertiesSet();
+        return jobLauncher;
+    }
 
 }
