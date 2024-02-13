@@ -1,5 +1,6 @@
 package br.com.cronos.bitabitcnab.job;
 
+import br.com.cronos.bitabitcnab.domain.TipoTransacao;
 import br.com.cronos.bitabitcnab.domain.Transacao;
 import br.com.cronos.bitabitcnab.domain.TransacaoCNAB;
 import org.springframework.batch.core.Job;
@@ -80,8 +81,13 @@ public class BatchConfig {
     @Bean
     ItemProcessor<TransacaoCNAB, Transacao> processor() {
         return item -> {
+            var tipoTransacao = TipoTransacao.findByTipo(item.tipo());
+            var valorNormalizado = item.valor()
+                    .divide(BigDecimal.valueOf(100))
+                    .multiply(tipoTransacao.getSinal());
+
             var transacao = new Transacao(null, item.tipo(), null,
-                    item.valor().divide(BigDecimal.valueOf(100)),
+                    valorNormalizado,
                     item.cpf(), item.cartao(),
                     null, item.donoDaLoja().trim(),
                     item.nomeDaLoja().trim())

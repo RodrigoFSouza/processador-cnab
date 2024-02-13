@@ -26,9 +26,7 @@ public class TransacaoServiceImpl implements TransacaoService {
 
         listTransacoes.forEach(transacao -> {
             String nomeDaLoja = transacao.nomeDaLoja();
-            var tipoTransacao = TipoTransacao.findByTipo(transacao.tipo());
-
-            BigDecimal valor = transacao.valor().multiply(tipoTransacao.getSinal());
+            var valor = transacao.valor();
 
             reportMap.compute(nomeDaLoja, (key, existingReport) -> {
                 var report = (existingReport != null) ? existingReport :
